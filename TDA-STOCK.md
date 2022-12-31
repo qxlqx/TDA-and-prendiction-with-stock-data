@@ -167,20 +167,20 @@ The topological model is corresponding to persistence which extracted with GUDHI
 ```python
 import gudhi
 
-# Persistance barcode
+# Persistence barcode
 rips_complex = gudhi.RipsComplex(points=distance_matrix, max_edge_length=250) #max_edge_length = filtration
 simplex_tree = rips_complex.create_simplex_tree(max_dimension=3)
 diag = simplex_tree.persistence(min_persistence=0.4)
 gudhi.plot_persistence_barcode(diag)
 
 
-# Persistance diagram
+# Persistence diagram
 diag = simplex_tree.persistence()
 gudhi.plot_persistence_diagram(diag)
 plt.show()
 
 
-# Persistance density
+# Persistence density
 import gudhi.point_cloud.knn
 
 gudhi.plot_persistence_density(diag) #dg
