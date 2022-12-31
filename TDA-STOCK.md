@@ -2,7 +2,7 @@
 
 
 
-In Topological data analysis, it's vital to build topological data model for integrated data in multi-dimension. Make the values which has been forecast according to the data's distribution as a centre of sphere, and adjust radius value, by plotting it in a 3DAxes, forecast new data distribution in reasonable probability, and analyse data trend in spatial-temporal duality.
+In Topological data analysis, it's vital to build topological data model for integrated data in multi-dimension. Make the values which has been forecast according to the data distribution as a centre of sphere, and adjust radius value, by plotting it in a 3DAxes, forecast new data distribution in reasonable probability, and analyse data trend in spatial-temporal duality.
 
 Import packages for model construction.
 
@@ -14,9 +14,9 @@ from matplotlib import cm
 
 
 
-This code apply the model to typical stocks data analysis and trend analysis according to the stock K-line. It uses sectional stock data including opening price, closing price and preclosing price from 2021 to 2022, in which data in September have been chosen as reference for forecast. To make visualization distinctly, the code uses ten stocks as a part to plot topological figure, increasing the number in every part properly is triable. And change radius in six levels from adjusted radius.
+This code apply the model to typical stocks data analysis and trend analysis according to the stock K-line. It uses sectional stock data including opening price, closing price and preclosing price from 2021 to 2022, in which data in Sept have been chosen as reference for forecast. To make visualization distinctly, the code uses ten stocks as a part to plot topological figure, increasing the number in every part properly is triable. And change radius in six levels from adjusted radius.
 
-from the trend implied from the whole stocks, data set follow direct ratio on the whole, and the data of chosen part are in downtrend. Just consider the new data have high probability to approach the proportional curve. By setting suitable magnification parameters to define six levels, get different values in levels, and assign weight to these radius values. If the range approach the last known stock, the data volatility is slight, the stock is steady. In the range of highest level or even over the range, data volatility is significant, may influence stock value to a great extent. In the medium range, the probability is higher than the former, and the distribution is fit for known data distribution.
+From the trend implied from the whole stocks, data set follow direct ratio on the whole, and the data of chosen part is in downtrend. Just consider the new data have high probability to approach the proportional curve. By setting suitable magnification parameters to define six levels, get different values in levels, and assign weight to these radius values. If the range approaches the last known stock, the data volatility is slight, the stock is steady. In the range of highest level or even over the range, data volatility is significant, may influence stock value to a great extent. In the medium range, the probability is higher than the former, and the distribution is fit for known data distribution.
 
 In every two-dimensional plane, to follow direct ratio more possibly and ensure the reference data deviation acceptable, choose the minimum value in three planes as basic unchanged value, And estimate the forecast data distribution according to the adjusted radius.
 
@@ -75,7 +75,7 @@ axs.plot_surface(x + slist[9][0], y + slist[9][1], z + slist[9][2], cmap=cm.GnBu
 
 
 
-Then try to build the topological data model and combine it with the forecast model. This code tries to build quadrangle components to reflects quadrilateral correlation data, referring to the thought of KNN, of course you can try triangular shape to build model. Each quadrangle implies the correlation data in space. And there are reflected characteristics of data change between different quadrangle.
+Then try to build the topological data model and combine it with the forecast model. This code tries to build quadrangle components to reflects quadrilateral correlation data, referring to the thought of KNN, of course you can try triangular shape to build model. Each quadrangle implies the correlation data in space. And there are reflected characteristics of data change between different quadrangles.
 
 ```python
 # Topological model
@@ -129,8 +129,6 @@ plt.show()
 
 
 <img src="C:%5CUsers%5C%E8%8D%89%E8%8A%A5%5CDesktop%5Cfigure%5Ctdafigure%5CFigure_176_tms.png" alt="Figure_176_tms" style="zoom:72%;" />
-
-
 
 <img src="C:%5CUsers%5C%E8%8D%89%E8%8A%A5%5CDesktop%5Cfigure%5Ctdafigure%5Cfigure_tdav.png" alt="figure_tdav" style="zoom:72%;" />
 
