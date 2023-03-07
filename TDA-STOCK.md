@@ -82,6 +82,7 @@ Then try to build the topological data model and combine it with the forecast mo
 distance_k = []
 distance = []
 shape_k = []
+shape_kall = []
 slist0 = slist[0]
 while len(slist) > 1:
     t = slist[0]
@@ -102,6 +103,7 @@ while len(slist) > 1:
 
     # Build component diagram
     shape_k.append(sli[0])
+    shape_kall.append(shape_k)
     if len(shape_k) == 3:
         xsd = [slist[rk][0],shape_k[0][0]]
         ysd = [slist[rk][1],shape_k[0][1]]
@@ -116,9 +118,9 @@ while len(slist) > 1:
     sr = slist[rk-1]
     slist[rk-1] = slist[0]
     slist[0] = sr
-xsf = [slist0[0],slist[0][0]]
-ysf = [slist0[1],slist[0][1]]
-zsf = [slist0[2],slist[0][2]]
+xsf = [shape_kall[-1][0][0],slist[0][0]]
+ysf = [shape_kall[-1][0][1],slist[0][1]]
+zsf = [shape_kall[-1][0][2],slist[0][2]]
 axs.plot(xsf,ysf,zsf,'o-')
 axs.set_xlabel('x')
 axs.set_ylabel('y')
