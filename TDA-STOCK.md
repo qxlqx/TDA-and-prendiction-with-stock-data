@@ -29,10 +29,31 @@ k = 20
 # Sept. data from line 174 to 194
 dmla = 176
 
+# Normalize data
+def normalization(x):
+    g = np.sum(x)/len(x)
+    xc = np.array(x) - g
+    xt = xc.T
+    a = np.sum(xc*xt)/len(x)
+    x = (x - g)/a
+    return x
+
+slivn0 = normalization(slivn0)
+slivn1 = normalization(slivn1)
+slivn2 = normalization(slivn2)
+for i in range(len(sli)):
+    sli[i][0] = slivn0[i]
+    sli[i][1] = slivn1[i]
+    sli[i][2] = slivn2[i]
+
 # Forecast model
 axs = plt.figure().add_subplot(projection='3d')
 for i in range(10):
-    slist.append([dml[dmla+i,0],dml[dmla+i,3],dml[dmla+i,4]])
+    sli.append([dml[dmla + i, 1],dml[dmla + i, 2],dml[dmla + i, 4], i])
+    slior.append([dml[dmla + i, 1], dml[dmla + i, 2], dml[dmla + i, 4]])
+    slivn0.append(dml[dmla + i, 1])
+    slivn1.append(dml[dmla + i, 2])
+    slivn2.append(dml[dmla + i, 4])
 
 u = np.linspace(0,2*np.pi,200)
 v = np.linspace(0,np.pi,200)
@@ -53,24 +74,24 @@ space_radius = np.sqrt(rlist[0]**2+rlist[1]**2+rlist[2]**2)
 # Forecast in every 2D plane
 slist_min = min(sli[9][0],sli[9][1],sli[9][2])
 while axi < 6:
-    if slist[9][0] == slist_min:
-        axs.plot_surface(space_radius*x/k + slist[9][0], space_radius*y/k + slist[9][1] - rstd, space_radius*z/k + slist[9][2] - rrdd, cmap=cm.afmhot, alpha=.2)
-        slist_x = slist[9][0]
-        slist_y = slist[9][1] - rstd
-        slist_z = slist[9][2] - rrdd
-    if slist[9][1] == slist_min:
-        axs.plot_surface(space_radius*x/k + slist[9][0] - rstd, space_radius*y/k + slist[9][1], space_radius*z/k + slist[9][2] - rndd, cmap=cm.afmhot, alpha=.2)
-        slist_x = slist[9][0] - rstd
-        slist_y = slist[9][1]
-        slist_z = slist[9][2] - rndd
-    if slist[9][2] == slist_min:
-        axs.plot_surface(space_radius*x/k + slist[9][0] - rrdd, space_radius*y/k + slist[9][1] - rndd, space_radius*z/k + slist[9][2], cmap=cm.afmhot, alpha=.2)
-        slist_x = slist[9][0] - rrdd
-        slist_y = slist[9][1] - rndd
-        slist_z = slist[9][2]
+    if sli[9][0] == slist_min:
+        axs.plot_surface(space_radius*x/k + sli[9][0], space_radius*y/k + sli[9][1] - rstd, space_radius*z/k + sli[9][2] - rrdd, cmap=cm.afmhot, alpha=.2)
+        slist_x = sli[9][0]
+        slist_y = sli[9][1] - rstd
+        slist_z = sli[9][2] - rrdd
+    if sli[9][1] == slist_min:
+        axs.plot_surface(space_radius*x/k + sli[9][0] - rstd, space_radius*y/k + sli[9][1], space_radius*z/k + sli[9][2] - rndd, cmap=cm.afmhot, alpha=.2)
+        slist_x = sli[9][0] - rstd
+        slist_y = sli[9][1]
+        slist_z = sli[9][2] - rndd
+    if sli[9][2] == slist_min:
+        axs.plot_surface(space_radius*x/k + sli[9][0] - rrdd, space_radius*y/k + sli[9][1] - rndd, space_radius*z/k + sli[9][2], cmap=cm.afmhot, alpha=.2)
+        slist_x = sli[9][0] - rrdd
+        slist_y = sli[9][1] - rndd
+        slist_z = sli[9][2]
     space_radius *= 1.5
     axi += 1
-axs.plot_surface(x + slist[9][0], y + slist[9][1], z + slist[9][2], cmap=cm.GnBu, alpha=.3)
+axs.plot_surface(x + sli[9][0], y + sli[9][1], z + sli[9][2], cmap=cm.GnBu, alpha=.3)
 ```
 
 
@@ -83,11 +104,21 @@ distance_k = []
 distance = []
 shape_k = []
 shape_kall = []
-slist0 = slist[0]
-while len(slist) > 1:
-    t = slist[0]
+tg = []
+tgn = []
+dotlen = []
+deki = []
+
+slrk = []
+slmp = []
+slmpl = []
+cs_k = 60
+
+slist0 = sli[0]
+while len(sli) > 1:
+    t = sli[0]
     i = 0
-    while i < len(slist):
+    while i < len(sli):
         s = np.array(t) - np.array(slist[i])
         ns = np.sqrt(s[0]**2+s[1]**2+s[2]**2)
         if ns > 0:
@@ -96,31 +127,160 @@ while len(slist) > 1:
         i += 1
     # Get the near one
     rk = distance_k[np.argmin(distance)]
-    xs = [t[0],slist[rk][0]]
-    ys = [t[1],slist[rk][1]]
-    zs = [t[2],slist[rk][2]]
+    
+    # Slope and edge length calculation
+    tgpl0 = max(abs(sli[rk][1]-t[1]), abs(sli[rk][0]-t[0]))
+    tg0_a = np.sign((sli[rk][1]-t[1])*(sli[rk][0]-t[0]))*min(abs((sli[rk][1]-t[1])/tgpl0),abs((sli[rk][0]-		t[0])/tgpl0))
+    tg0_b = (sli[rk][2] - t[2])/np.sqrt((sli[rk][0]-t[0])**2 + (sli[rk][1]-t[1])**2)
+    tg.append([tg0_a,tg0_b])
+    tgd0 = np.sign(t[2] - sli[rk][2])
+    tgn0_a = abs(tg0_a) * tgd0
+    tgn0_b = abs(tg0_b) * tgd0
+    if t[3] < sli[rk][3]:
+        tgn0_a = -tgn0_a
+        tgn0_b = -tgn0_b
+    tgn.append([tgn0_a,tgn0_b])
+    dotlen.append(np.min(nsl))
+    
+    xs = [t[0],sli[rk][0]]
+    ys = [t[1],sli[rk][1]]
+    zs = [t[2],sli[rk][2]]
     axs.plot(xs,ys,zs,'o-')
 
     # Build component diagram
     shape_k.append(sli[0])
-    shape_kall.append(shape_k)
-    if len(shape_k) == 3:
-        xsd = [slist[rk][0],shape_k[0][0]]
-        ysd = [slist[rk][1],shape_k[0][1]]
-        zsd = [slist[rk][2],shape_k[0][2]]
+    deki.append(sli[0][-1])
+    if len(shape_k) == 2:
+        shape_kall.append(shape_k)
+        
+        # Data extraction for contraction
+        for i in range(3):
+        	mp1 = .5*sli[rk][i] + .25*shape_k[0][i] + .25*shape_k[1][i]
+            mp2 = .5*shape_k[0][i] + .25*sli[rk][i] + .25*shape_k[1][i]
+            mp3 = .5*shape_k[1][i] + .25*shape_k[0][i] + .25*sli[rk][i]
+            mp = np.mean([mp1,mp2,mp3])
+            slmp.append(mp)
+        sp = np.array(slmp) - np.array(sli[rk][:3])
+        nsp = np.sqrt(sp[0]**2+sp[1]**2+sp[2]**2)
+        if nsp <= 60:
+            slrk.append(sli[rk][3])
+            slmpl.append(slmp)
+        
+        tgpl1 = max(abs(shape_k[0][1]-sli[rk][1]), abs(shape_k[0][0]-sli[rk][0]))
+        tg1_a = np.sign((shape_k[0][1]-sli[rk][1]) * (shape_k[0][0]-sli[rk][0])) * min(abs((shape_k[0][1]-sli[rk][1])/tgpl1),abs((shape_k[0][0]-sli[rk][0])/tgpl1))
+        tg1_b = (shape_k[0][2] - sli[rk][2]) / np.sqrt((shape_k[0][0]-sli[rk][0])**2 + (shape_k[0][1]-sli[rk][1])**2)
+        tg.append([tg1_a, tg1_b])
+        tgd1 = np.sign(shape_k[0][2] - sli[rk][2])
+        tgn1_a = abs(tg1_a) * tgd1
+        tgn1_b = abs(tg1_b) * tgd1
+        if dek[0][3] < sli[rk][3]:
+            tgn1_a = -tgn1_a
+            tgn1_b = -tgn1_b
+        tgn.append([tgn1_a, tgn1_b])
+        dotlen1 = np.linalg.norm(np.array(sli[rk])-np.array(shape_k[0]))
+        dotlen.append(dotlen1)
+        
+        xsd = [sli[rk][0],shape_k[0][0]]
+        ysd = [sli[rk][1],shape_k[0][1]]
+        zsd = [sli[rk][2],shape_k[0][2]]
         axs.plot(xsd,ysd,zsd,'o-')
         shape_k = []
     
     # Refresh data
-    del slist[0]
+    del sli[0]
     distance_k = []
     distance = []
+    slmp = []
     sr = slist[rk-1]
     slist[rk-1] = slist[0]
     slist[0] = sr
-xsf = [shape_kall[-1][0][0],slist[0][0]]
-ysf = [shape_kall[-1][0][1],slist[0][1]]
-zsf = [shape_kall[-1][0][2],slist[0][2]]
+    
+    # Tail connection
+    if n % 2 != 0:
+    tgpl2 = max(abs(sli[0][1]-deke[-1][0][1]), abs(sli[0][0]-deke[-1][0][0]))
+    tg2_a = np.sign((sli[0][1]-deke[-1][0][1]) * (sli[0][0]-deke[-1][0][0])) * min(abs((sli[0][1]-deke[-1]		[0][1]) / tgpl2),abs((sli[0][0]-deke[-1][0][0]) / tgpl2))
+    tg2_b = (sli[0][2] - deke[-1][0][2])/np.sqrt((sli[0][0]-deke[-1][0][0])**2 + (sli[0][1]-deke[-1][0]			[1])**2)
+    tg.append([tg2_a, tg2_b])
+    tgd2 = np.sign(deke[-1][0][2] - sli[0][2])
+    tgn2_a = abs(tg2_a) * tgd2
+    tgn2_b = abs(tg2_b) * tgd2
+    if deke[-1][0][3] < sli[0][3]:
+        tgn2_a = -tgn2_a
+        tgn2_b = -tgn2_b
+    tgn.append([tgn2_a, tgn2_b])
+    dotlen2 = np.linalg.norm(np.array(deke[-1][0])-np.array(sli[0]))
+    dotlen.append(dotlen2)
+
+    xsf = [deke[-1][0][0],sli[0][0]]
+    ysf = [deke[-1][0][1],sli[0][1]]
+    zsf = [deke[-1][0][2],sli[0][2]]
+else:
+    xa = deke[-1][0]
+    xb = deke[-1][1]
+    dxa = np.array(sli[0][:3]) - np.array(xa[:3])
+    dxaf = np.linalg.norm(dxa)
+    dxb = np.array(sli[0][:3]) - np.array(xb[:3])
+    dxbf = np.linalg.norm(dxb)
+    A = np.mat([np.array(deke[-1][0][:3]) - np.array(deke[-1][1][:3]), np.array(deke[-2][0][:3]) - np.array(deke[-1][1][:3])])
+    p0 = np.mat(np.array(sli[0][:3]) - np.array(deke[-1][1][:3]))
+    B = np.bmat('A; p0')
+    if matrix_rank(B) == 1:
+        tgpl3 = max(abs(sli[0][1] - xa[1]), abs(sli[0][0] - xa[0]))
+        tg3_a = np.sign((sli[0][1] - xa[1]) * (sli[0][0] - xa[0])) * min(abs((sli[0][1] - xa[1]) / tgpl3), abs((sli[0][0] - xa[0]) / tgpl3))
+        tg3_b = (sli[0][2]-xa[2]) / np.sqrt((sli[0][0]-xa[0]) ** 2 + (sli[0][1] - xa[1]) ** 2)
+        tg.append([tg3_a, tg3_b])
+        tgd3 = np.sign(deke[-1][0][2] - sli[0][2])
+        tgn3_a = abs(tg3_a) * tgd3
+        tgn3_b = abs(tg3_b) * tgd3
+        if deke[-1][0][3] < sli[0][3]:
+            tgn3_a = -tgn3_a
+            tgn3_b = -tgn3_b
+        tgn.append([tgn3_a, tgn3_b])
+        dotlen.append(dxaf)
+
+        xsf = [xa[0], sli[0][0]]
+        ysf = [xa[1], sli[0][1]]
+        zsf = [xa[2], sli[0][2]]
+    else:
+        if dxaf <= dxbf:
+            tgpl3 = max(abs(sli[0][1] - xa[1]), abs(sli[0][0] - xa[0]))
+            tg3_a = np.sign((sli[0][1] - xa[1]) * (sli[0][0] - xa[0])) * min(
+                abs((sli[0][1] - xa[1]) / tgpl3),
+                abs((sli[0][0] - xa[0]) / tgpl3))
+            tg3_b = (sli[0][2] - xa[2]) / np.sqrt(
+                (sli[0][0] - xa[0]) ** 2 + (sli[0][1] - xa[1]) ** 2)
+            tg.append([tg3_a, tg3_b])
+            tgd3 = np.sign(deke[-1][0][2] - sli[0][2])
+            tgn3_a = abs(tg3_a) * tgd3
+            tgn3_b = abs(tg3_b) * tgd3
+            if deke[-1][0][3] < sli[0][3]:
+                tgn3_a = -tgn3_a
+                tgn3_b = -tgn3_b
+            tgn.append([tgn3_a, tgn3_b])
+            dotlen.append(dxaf)
+            xsf = [xa[0], sli[0][0]]
+            ysf = [xa[1], sli[0][1]]
+            zsf = [xa[2], sli[0][2]]
+        else:
+            tgpl3 = max(abs(sli[0][1] - xb[1]), abs(sli[0][0] - xb[0]))
+            tg3_a = np.sign((sli[0][1] - xb[1]) * (sli[0][0] - xb[0])) * min(
+                abs((sli[0][1] - xb[1]) / tgpl3),
+                abs((sli[0][0] - xb[0]) / tgpl3))
+            tg3_b = (sli[0][2] - xb[2]) / np.sqrt(
+                (sli[0][0] - xb[0]) ** 2 + (sli[0][1] - xb[1]) ** 2)
+            tg.append([tg3_a, tg3_b])
+            tgd3 = np.sign(deke[-1][0][2] - sli[0][2])
+            tgn3_a = abs(tg3_a) * tgd3
+            tgn3_b = abs(tg3_b) * tgd3
+            if deke[-1][0][3] < sli[0][3]:
+                tgn3_a = -tgn3_a
+                tgn3_b = -tgn3_b
+            tgn.append([tgn3_a, tgn3_b])
+            dotlen.append(dxbf)
+			xsf = [shape_kall[-1][1][0],slist[0][0]]
+			ysf = [shape_kall[-1][1][1],slist[0][1]]
+			zsf = [shape_kall[-1][1][2],slist[0][2]]
+
 axs.plot(xsf,ysf,zsf,'o-')
 axs.set_xlabel('x')
 axs.set_ylabel('y')
@@ -144,18 +304,25 @@ Here make a probability and accuracy rate analysis. based on the forecast values
 
 ```python
 # Agree of aggregation and error
-slist_f = []
-slist_f.append([slist_x,slist_y,slist_z])
+
 dmlf = dmla + 10
-point_f = np.array([dml[dmlf,0],dml[dmlf,3],dml[dmlf,4]])
-npo = point_f - np.array(slist[0])
-npof = point_f - np.array(slist_f[0])
-length_npo = np.sqrt(npo[0]**2+npo[1]**2+npo[2]**2)
-length_npof = np.sqrt(npof[0]**2+npof[1]**2+npof[2]**2)
-aggregation_agree = abs(length_npof - space_radius - 5)/length_npo
-print(aggregation_agree)
-error = abs(length_npof - space_radius)*3/sum(point_f)
-print(error)
+poft = np.array([dml[dmlf,1],dml[dmlf,2],dml[dmlf,4]])
+npolen = np.linalg.norm(poft - np.array(ndot))
+npoflen = np.linalg.norm(poft - np.array(slif))
+npoclen = np.linalg.norm(np.array(ndot) - np.array(slif))
+ae = npoclen/npolen
+st = 0
+pdot = [dml[dmlf,1],dml[dmlf,2],dml[dmlf,4]]
+rf = r*rk**5
+npoflenil = []
+while np.linalg.norm(np.array(pdot) - np.array(slif)) <= rf:
+	st += 1
+    npofleni = np.linalg.norm(np.array(pdot) - np.array(slif))
+    npoflenil.append(npofleni)
+   pdot = [dml[dmlf+st,1],dml[dmlf+st,2],dml[dmlf+st,4]]
+range_possibility = (st+1)/6
+aggregation_agree = 1 - max(npoflenil)/rf
+error = abs(npolen - npoflen)/npolen
 ```
 
 
